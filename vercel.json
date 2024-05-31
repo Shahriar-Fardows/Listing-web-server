@@ -1,6 +1,6 @@
 {
     "version": 2,
-    "name": "fashion-server",
+    "name": "listing-web-server",
     "builds": [
       {
         "src": "./index.js",
