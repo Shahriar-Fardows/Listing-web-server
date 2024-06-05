@@ -23,9 +23,36 @@ async function run() {
   try {
     await client.connect();
 
+    const userEmail = client.db("user").collection("email");
     const countryCollection = client.db("country").collection("city");
     const categoryCollection = client.db("categorys").collection("category");
     const sponsor = client.db("sponsor").collection("lists");
+
+    // Country API ---------------------------------------------------
+
+    // Get all emails and password
+    app.get("/email", async (req, res) => {
+      try {
+        const cursor = await userEmail.find({});
+        const data = await cursor.toArray();
+        res.json(data);
+      } catch (err) {
+        console.error("Error getting data:", err);
+        res.status(500).json({ message: "Error getting data 41" });
+      }
+    });
+
+    // Post a new email and password
+    app.post("/email", async (req, res) => {
+      try {
+        const data = req.body;
+        const result = await userEmail.insertOne(data);
+        res.json(result);
+      } catch (err) {
+        console.error("Error inserting data:", err);
+        res.status(500).json({ message: "Error inserting data 70" });
+      }
+    });
 
     // Country API ---------------------------------------------------
 
@@ -40,9 +67,23 @@ async function run() {
         res.status(500).json({ message: "Error getting data 41" });
       }
     });
+
+    // Post a new country
+    app.post("/country", async (req, res) => {
+      try {
+        const data = req.body;
+        const result = await countryCollection.insertOne(data);
+        res.json(result);
+      } catch (err) {
+        console.error("Error inserting data:", err);
+        res.status(500).json({ message: "Error inserting data 70" });
+      }
+    });
+    
+
     // sponsor  API ---------------------------------------------------
 
-    // Get all countries
+    // Get all sponsors
     app.get("/sponsor", async (req, res) => {
       try {
         const cursor = await sponsor.find({});
@@ -110,9 +151,28 @@ async function run() {
       }
     });
 
+    // Delete a sub-category from a category
+    app.delete("/:categoryId/sub-category/:subCategoryName", async (req, res) => {
+      try {
+          const categoryId = req.params.categoryId;
+          const subCategoryName = req.params.subCategoryName;
+          const result = await categoryCollection.updateOne(
+              { _id: new ObjectId(categoryId) },
+              { $pull: { sub_categories: subCategoryName } }
+          );
+          res.json(result);
+      } catch (err) {
+          console.error("Error deleting sub-category:", err);
+          res.status(500).json({ message: "Error deleting sub-category" });
+      }
+  });
+  
+
     // End Category API ---------------------------------------------------
 
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
   } finally {
     // Ensure the client will close when you finish/error
     // await client.close();
