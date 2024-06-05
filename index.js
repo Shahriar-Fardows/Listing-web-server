@@ -23,14 +23,13 @@ async function run() {
   try {
     await client.connect();
 
-    // database name
-
     const countryCollection = client.db("country").collection("city");
     const categoryCollection = client.db("categorys").collection("category");
+    const sponsor = client.db("sponsor").collection("lists");
 
-    // country api code ---------------------------------------------------
+    // Country API ---------------------------------------------------
 
-    // Get all country
+    // Get all countries
     app.get("/country", async (req, res) => {
       try {
         const cursor = await countryCollection.find({});
@@ -41,12 +40,23 @@ async function run() {
         res.status(500).json({ message: "Error getting data 41" });
       }
     });
+    // sponsor  API ---------------------------------------------------
 
-    // end country api code ---------------------------------------------------
+    // Get all countries
+    app.get("/sponsor", async (req, res) => {
+      try {
+        const cursor = await sponsor.find({});
+        const data = await cursor.toArray();
+        res.json(data);
+      } catch (err) {
+        console.error("Error getting data:", err);
+        res.status(500).json({ message: "Error getting data 41" });
+      }
+    });
 
-    // category api code ---------------------------------------------------
+    // Category API ---------------------------------------------------
 
-    // Get all category
+    // Get all categories
     app.get("/category", async (req, res) => {
       try {
         const cursor = await categoryCollection.find({});
@@ -74,8 +84,7 @@ async function run() {
       }
     });
 
-    // post category
-
+    // Post a new category
     app.post("/category", async (req, res) => {
       try {
         const data = req.body;
@@ -87,8 +96,7 @@ async function run() {
       }
     });
 
-    // delete category by id
-
+    // Delete category by id
     app.delete("/category/:id", async (req, res) => {
       try {
         const id = req.params.id;
@@ -102,12 +110,9 @@ async function run() {
       }
     });
 
-    // end category api code ---------------------------------------------------
+    // End Category API ---------------------------------------------------
 
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensure the client will close when you finish/error
     // await client.close();
@@ -115,6 +120,7 @@ async function run() {
 }
 run().catch(console.dir);
 
+// Root endpoint
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
