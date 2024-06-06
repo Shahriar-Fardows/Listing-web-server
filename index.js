@@ -27,6 +27,7 @@ async function run() {
     const countryCollection = client.db("country").collection("city");
     const categoryCollection = client.db("categorys").collection("category");
     const sponsor = client.db("sponsor").collection("lists");
+    const post = client.db("user").collection("post");
 
     // Country API ---------------------------------------------------
 
@@ -169,6 +170,35 @@ async function run() {
   
 
     // End Category API ---------------------------------------------------
+
+
+    // Post api for user ---------------------------------------------------
+
+    // Get all posts
+
+    app.get("/post", async (req, res) => {
+      try {
+        const cursor = await post.find({});
+        const data = await cursor.toArray();
+        res.json(data);
+      } catch (err) {
+        console.error("Error getting data:", err);
+        res.status(500).json({ message: "Error getting data 41" });
+      }
+    });
+
+    // post all posts
+    app.post("/post", async (req, res) => {
+      try {
+        const data = req.body;
+        const result = await post.insertOne(data);
+        res.json(result);
+      } catch (err) {
+        console.error("Error inserting data:", err);
+        res.status(500).json({ message: "Error inserting data 70" });
+      }
+    });
+
 
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
