@@ -187,6 +187,21 @@ async function run() {
       }
     });
 
+    // get all posts by id
+    
+    app.get("/post/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const cursor = await post.find({ _id: new ObjectId(id) });
+        const data = await cursor.toArray();
+        res.json(data);
+      } catch (err) {
+        console.error("Error getting data:", err);
+        res.status(500).json({ message: "Error getting data 41" });
+      }
+    });
+    
+
     // post all posts
     app.post("/post", async (req, res) => {
       try {
@@ -198,6 +213,8 @@ async function run() {
         res.status(500).json({ message: "Error inserting data 70" });
       }
     });
+
+
 
 
     console.log(
