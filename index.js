@@ -46,7 +46,10 @@ async function run() {
     // Post a new email and password
     app.post("/email", async (req, res) => {
       try {
-        const data = req.body;
+        let userData = req.body;
+        const data = { ...userData, status: "active", role: "user" };
+
+        console.log(data);
         const result = await userEmail.insertOne(data);
         res.json(result);
       } catch (err) {
@@ -55,6 +58,40 @@ async function run() {
       }
     });
 
+    app.post("/admin", async (req, res) => {
+      try {
+        // let userData = req.body;
+        const data = {
+          email: "admin@gmail.com",
+          password: "edu@admin",
+          status: "active",
+          role: "admin",
+        };
+
+        console.log(data);
+        const result = await userEmail.insertOne(data);
+        res.json(result);
+      } catch (err) {
+        console.error("Error inserting data:", err);
+        res.status(500).json({ message: "Error inserting data 70" });
+      }
+    });
+
+    // block user by admin
+    app.patch("/block/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const updateStateus = {
+          $set: { status: "block" },
+        };
+        const result = await userEmail.updateOne(query, updateStateus);
+        res.json(result);
+      } catch (err) {
+        console.error("Error inserting data:", err);
+        res.status(500).json({ message: "Error inserting data 70" });
+      }
+    });
     // Country API ---------------------------------------------------
 
     // Get all countries
@@ -80,7 +117,6 @@ async function run() {
         res.status(500).json({ message: "Error inserting data 70" });
       }
     });
-    
 
     // sponsor  API ---------------------------------------------------
 
@@ -153,24 +189,25 @@ async function run() {
     });
 
     // Delete a sub-category from a category
-    app.delete("/:categoryId/sub-category/:subCategoryName", async (req, res) => {
-      try {
+    app.delete(
+      "/:categoryId/sub-category/:subCategoryName",
+      async (req, res) => {
+        try {
           const categoryId = req.params.categoryId;
           const subCategoryName = req.params.subCategoryName;
           const result = await categoryCollection.updateOne(
-              { _id: new ObjectId(categoryId) },
-              { $pull: { sub_categories: subCategoryName } }
+            { _id: new ObjectId(categoryId) },
+            { $pull: { sub_categories: subCategoryName } }
           );
           res.json(result);
-      } catch (err) {
+        } catch (err) {
           console.error("Error deleting sub-category:", err);
           res.status(500).json({ message: "Error deleting sub-category" });
+        }
       }
-  });
-  
+    );
 
     // End Category API ---------------------------------------------------
-
 
     // Post api for user ---------------------------------------------------
 
@@ -188,7 +225,7 @@ async function run() {
     });
 
     // get all posts by id
-    
+
     app.get("/post/:id", async (req, res) => {
       try {
         const id = req.params.id;
@@ -200,13 +237,15 @@ async function run() {
         res.status(500).json({ message: "Error getting data 41" });
       }
     });
-    
 
     // post all posts
     app.post("/post", async (req, res) => {
       try {
-        const data = req.body;
-        const result = await post.insertOne(data);
+        let data = req.body;
+        const status = "panding";
+        const fainalData = { status, ...data };
+
+        const result = await post.insertOne(fainalData);
         res.json(result);
       } catch (err) {
         console.error("Error inserting data:", err);
@@ -214,8 +253,21 @@ async function run() {
       }
     });
 
-
-
+    // Approve post status by admin
+    app.patch("/aprovepost/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const updateStateus = {
+          $set: { status: "approved" },
+        };
+        const result = await post.updateOne(query, updateStateus);
+        res.json(result);
+      } catch (err) {
+        console.error("Error inserting data:", err);
+        res.status(500).json({ message: "Error inserting data 70" });
+      }
+    });
 
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
