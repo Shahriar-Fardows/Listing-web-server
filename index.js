@@ -28,11 +28,10 @@ async function run() {
     const categoryCollection = client.db("categorys").collection("category");
     const sponsor = client.db("sponsor").collection("lists");
     const post = client.db("user").collection("post");
-
-    // Country API ---------------------------------------------------
+    const payment = client.db("crypto").collection("address");
 
     // Get all emails and password
-    app.get("/email", async (req, res) => {
+    app.get("/total-user", async (req, res) => {
       try {
         const cursor = await userEmail.find({});
         const data = await cursor.toArray();
@@ -52,6 +51,65 @@ async function run() {
       } catch (err) {
         console.error("Error inserting data:", err);
         res.status(500).json({ message: "Error inserting data 70" });
+      }
+    });
+
+    // payment  API ---------------------------------------------------
+
+    // Get all payments address
+
+    app.get("/address", async (req, res) => {
+      try {
+        const cursor = await payment.find({});
+        const data = await cursor.toArray();
+        res.json(data);
+      } catch (err) {
+        console.error("Error getting data:", err);
+        res.status(500).json({ message: "Error getting data 41" });
+      }
+    });
+
+    // Post a new payment address
+
+    app.post("/addAddress", async (req, res) => {
+      const data = req.body;
+      const result = await payment.insertOne(data);
+      res.send(result);
+    });
+
+    // update payment address by id
+
+    app.put("/address/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const data = req.body;
+        const result = await payment.updateOne(
+          { _id: new ObjectId(id) },
+          {
+            $set: {
+              address: data.address,
+            },
+          }
+        );
+        res.json(result);
+      } catch (err) {
+        console.error("Error updating data:", err);
+        res.status(500).json({ message: "Error updating data" });
+      }
+    });
+
+    
+
+    // Delete payment address by id
+
+    app.delete("/address/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const result = await payment.deleteOne({ _id: new ObjectId(id) });
+        res.json(result);
+      } catch (err) {
+        console.error("Error deleting data:", err);
+        res.status(500).json({ message: "Error deleting data 85" });
       }
     });
 
@@ -80,7 +138,6 @@ async function run() {
         res.status(500).json({ message: "Error inserting data 70" });
       }
     });
-    
 
     // sponsor  API ---------------------------------------------------
 
@@ -153,42 +210,43 @@ async function run() {
     });
 
     // Delete a sub-category from a category
-    app.delete("/:categoryId/sub-category/:subCategoryName", async (req, res) => {
-      try {
+    app.delete(
+      "/:categoryId/sub-category/:subCategoryName",
+      async (req, res) => {
+        try {
           const categoryId = req.params.categoryId;
           const subCategoryName = req.params.subCategoryName;
           const result = await categoryCollection.updateOne(
-              { _id: new ObjectId(categoryId) },
-              { $pull: { sub_categories: subCategoryName } }
+            { _id: new ObjectId(categoryId) },
+            { $pull: { sub_categories: subCategoryName } }
           );
           res.json(result);
-      } catch (err) {
+        } catch (err) {
           console.error("Error deleting sub-category:", err);
           res.status(500).json({ message: "Error deleting sub-category" });
+        }
       }
-  });
-  
+    );
 
     // End Category API ---------------------------------------------------
-
 
     // Post api for user ---------------------------------------------------
 
     // Get all posts
 
     app.get("/post", async (req, res) => {
-      try {
-        const cursor = await post.find({});
-        const data = await cursor.toArray();
-        res.json(data);
-      } catch (err) {
-        console.error("Error getting data:", err);
-        res.status(500).json({ message: "Error getting data 41" });
+      const email = req.query.email;
+      console.log(req.query.email);
+      let query = {};
+      if (req.query?.email) {
+        query = { email: email };
       }
+      const result = await post.find(query).toArray();
+      res.send(result);
     });
 
     // get all posts by id
-    
+
     app.get("/post/:id", async (req, res) => {
       try {
         const id = req.params.id;
@@ -200,7 +258,6 @@ async function run() {
         res.status(500).json({ message: "Error getting data 41" });
       }
     });
-    
 
     // post all posts
     app.post("/post", async (req, res) => {
@@ -214,8 +271,18 @@ async function run() {
       }
     });
 
+    // post delete by id
 
-
+    app.delete("/post/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const result = await post.deleteOne({ _id: new ObjectId(id) });
+        res.json(result);
+      } catch (err) {
+        console.error("Error deleting data:", err);
+        res.status(500).json({ message: "Error deleting data 85" });
+      }
+    });
 
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
