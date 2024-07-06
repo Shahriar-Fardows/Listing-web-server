@@ -45,7 +45,10 @@ async function run() {
     // Post a new email and password
     app.post("/email", async (req, res) => {
       try {
-        const data = req.body;
+        let userData = req.body;
+        const data = { ...userData, status: "active", role: "user" };
+
+        console.log(data);
         const result = await userEmail.insertOne(data);
         res.json(result);
       } catch (err) {
@@ -262,8 +265,11 @@ async function run() {
     // post all posts
     app.post("/post", async (req, res) => {
       try {
-        const data = req.body;
-        const result = await post.insertOne(data);
+        let data = req.body;
+        const status = "panding";
+        const fainalData = { status, ...data };
+
+        const result = await post.insertOne(fainalData);
         res.json(result);
       } catch (err) {
         console.error("Error inserting data:", err);
